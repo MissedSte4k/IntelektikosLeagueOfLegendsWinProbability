@@ -31,9 +31,56 @@ namespace Intelektika
         {
             MessageBox.Show("Thanks!");
         }
+
+        public List<NormilizedData> DataSplit(List<FullData> k)
+        {
+            List<NormilizedData> Normalized = new List<NormilizedData>();
+            foreach (FullData m in k)
+            {
+
+            }
+        }
+
+
+    }
+    public class Instant
+    {
+        public int Variable { get; set; }
+        public int t1_win { get; set; }
+        public int t2_win { get; set; }
     }
 
-    public class 
+   public class NormilizedData
+    {
+        public int GameDuration { get; set; }
+        public int Winner { get; set; }
+        public int FirstBlood { get; set; }
+        public int FirstTower { get; set; }
+        public int FirstInhibitor { get; set; }
+        public int FirstBaron { get; set; }
+        public int FirstDragon { get; set; }
+        public int FirstRiftHerald { get; set; }
+        public int t1_towerKill { get; set; }
+        public int t1_inhibitorKills { get; set; }
+        public int t1_baronKills { get; set; }
+        public int t1_dragonKills { get; set; }
+        public int t1_riftHeraldKills { get; set; }
+        public int t2_towerKill { get; set; }
+        public int t2_inhibitorKills { get; set; }
+        public int t2_baronKills { get; set; }
+        public int t2_dragonKills { get; set; }
+        public int t2_riftHeraldKills { get; set; }
+        public int t1_champ1id { get; set; }
+        public int t1_champ2id { get; set; }
+        public int t1_champ3id { get; set; }
+        public int t1_champ4id { get; set; }
+        public int t1_champ5id { get; set; }
+        public int t2_champ1id { get; set; }
+        public int t2_champ2id { get; set; }
+        public int t2_champ3id { get; set; }
+        public int t2_champ4id { get; set; }
+        public int t2_champ5id { get; set; }
+    }
     public class FullData
     {
         public int GameID { get; set; }
