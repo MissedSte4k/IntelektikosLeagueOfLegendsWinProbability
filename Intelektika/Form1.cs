@@ -304,7 +304,86 @@ namespace Intelektika
             return temp;
         }
 
+        public List<List<int>> ReadLinesAsInt()
+        {
+            List<List<int>> fullList = new List<List<int>>();
 
+            using (StreamReader reader = new StreamReader(file))
+            {
+                string line = null;
+                line = reader.ReadLine();
+
+                List<int> intList = new List<int>();
+
+                while (null != (line = reader.ReadLine()))
+                {
+                    string[] values = line.Split(';');
+                    intList.Add(int.Parse(values[2]));
+                    intList.Add(int.Parse(values[3]));
+                    intList.Add(int.Parse(values[4]));
+                    intList.Add(int.Parse(values[5]));
+                    intList.Add(int.Parse(values[6]));
+                    intList.Add(int.Parse(values[7]));
+                    intList.Add(int.Parse(values[8]));
+                    intList.Add(int.Parse(values[9]));
+                    intList.Add(int.Parse(values[10]));
+                    intList.Add(int.Parse(values[11]));
+                    intList.Add(int.Parse(values[12]));
+                    intList.Add(int.Parse(values[13]));
+                    intList.Add(int.Parse(values[14]));
+                    intList.Add(int.Parse(values[15]));
+                    intList.Add(int.Parse(values[16]));
+                    intList.Add(int.Parse(values[17]));
+                    intList.Add(int.Parse(values[18]));
+                    intList.Add(int.Parse(values[19]));
+                    intList.Add(int.Parse(values[20]));
+                    intList.Add(int.Parse(values[21]));
+                    intList.Add(int.Parse(values[22]));
+                    intList.Add(int.Parse(values[23]));
+                    intList.Add(int.Parse(values[24]));
+                    intList.Add(int.Parse(values[25]));
+                    intList.Add(int.Parse(values[26]));
+                    intList.Add(int.Parse(values[27]));
+                    intList.Add(int.Parse(values[28]));
+                    intList.Add(int.Parse(values[29]));
+                    intList.Add(int.Parse(values[30]));
+                    intList.Add(int.Parse(values[31]));
+                    intList.Add(int.Parse(values[32]));
+                    intList.Add(int.Parse(values[33]));
+                    intList.Add(int.Parse(values[34]));
+                    intList.Add(int.Parse(values[35]));
+                    intList.Add(int.Parse(values[36]));
+                    intList.Add(int.Parse(values[37]));
+                    intList.Add(int.Parse(values[38]));
+                    intList.Add(int.Parse(values[39]));
+                    intList.Add(int.Parse(values[40]));
+                    intList.Add(int.Parse(values[41]));
+                    intList.Add(int.Parse(values[42]));
+                    intList.Add(int.Parse(values[43]));
+                    intList.Add(int.Parse(values[44]));
+                    intList.Add(int.Parse(values[45]));
+                    intList.Add(int.Parse(values[46]));
+                    intList.Add(int.Parse(values[47]));
+                    intList.Add(int.Parse(values[48]));
+                    intList.Add(int.Parse(values[49]));
+                    intList.Add(int.Parse(values[50]));
+                    intList.Add(int.Parse(values[51]));
+                    intList.Add(int.Parse(values[52]));
+                    intList.Add(int.Parse(values[53]));
+                    intList.Add(int.Parse(values[54]));
+                    intList.Add(int.Parse(values[55]));
+                    intList.Add(int.Parse(values[56]));
+                    intList.Add(int.Parse(values[57]));
+                    intList.Add(int.Parse(values[58]));
+                    intList.Add(int.Parse(values[59]));
+                    intList.Add(int.Parse(values[60]));                   
+                }
+
+                fullList.Add(intList);
+            }
+
+            return fullList;
+        }
     }
 
 
