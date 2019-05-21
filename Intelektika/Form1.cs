@@ -281,6 +281,25 @@ namespace Intelektika
             }
             return visas;
         }
+        public List<string> ReadLinesAsString()
+        {
+            List<string> temp = new List<string>();
+
+            using (StreamReader reader = new StreamReader(file))
+            {
+                string line = null;
+                line = reader.ReadLine();
+
+                for (int i = 0; i < 1000; i++)
+                {
+                    temp.Add(reader.ReadLine());
+                }
+            }
+
+            return temp;
+        }
+
+
     }
 
 
