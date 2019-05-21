@@ -18,6 +18,10 @@ namespace Intelektika
     {
         public string file = @"..\Debug\Data\games.csv";
 
+        public const int MaxTime = 16;
+        public const int MaxNumberOfNormalizedData = 27;
+
+
         public Form1()
         {
             InitializeComponent();
