@@ -33,6 +33,7 @@ namespace Intelektika
         private void button1_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Thanks!");
+            var a = DataSplit();
             List<FullData> fullDataList = ReadFile(file);
             
         }
@@ -118,21 +119,76 @@ namespace Intelektika
             }
             return fullDataList;
         }
-
-        public List<NormilizedData> DataSplit(List<FullData> k)
+        /// <summary>
+        /// prop listas, kurio viduje priklausoma nuo laiko, kurio viduje priklausima nuo variable
+        /// </summary>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        public List<Dictionary<int, Dictionary<int,Instant>>> DataSplit()
         {
-            List<NormilizedData> Normalized = new List<NormilizedData>();
-            foreach (FullData m in k)
+            List<Dictionary<int, Dictionary<int, Instant>>> visas = new List<Dictionary<int, Dictionary<int, Instant>>>();
+            for (int i = 0; i < 27; i++)
             {
-
+                Dictionary<int, Dictionary<int, Instant>> a = new Dictionary<int, Dictionary<int, Instant>>();
+                for (int j = 0; j < 16; j++)
+                {
+                    Dictionary<int, Instant> b = new Dictionary<int, Instant>();
+                    a.Add(j, b);
+                }
+                visas.Add(a);
             }
+
+            List<FullData> fullDataList = new List<FullData>();
+
+            using (StreamReader reader = new StreamReader(file))
+            {
+                string line = null;
+                line = reader.ReadLine();
+
+                while (null != (line = reader.ReadLine()))
+                {
+                    FullData temp = new FullData();
+
+                    string[] values = line.Split(',');
+                    temp.GameDuration = int.Parse(values[2]);
+                    temp.Winner = int.Parse(values[4]);
+                    temp.FirstBlood = int.Parse(values[5]);
+                    temp.FirstTower = int.Parse(values[6]);
+                    temp.FirstInhibitor = int.Parse(values[7]);
+                    temp.FirstBaron = int.Parse(values[8]);
+                    temp.FirstDragon = int.Parse(values[9]);
+                    temp.FirstRiftHerald = int.Parse(values[10]);
+                    temp.t1_champ1id = int.Parse(values[11]);
+                    temp.t1_champ2id = int.Parse(values[14]);
+                    temp.t1_champ3id = int.Parse(values[17]);
+                    temp.t1_champ4id = int.Parse(values[20]);
+                    temp.t1_champ5id = int.Parse(values[23]);
+                    temp.t1_towerKill = int.Parse(values[26]);
+                    temp.t1_inhibitorKills = int.Parse(values[27]);
+                    temp.t1_baronKills = int.Parse(values[28]);
+                    temp.t1_dragonKills = int.Parse(values[29]);
+                    temp.t1_riftHeraldKills = int.Parse(values[30]);
+                    temp.t2_champ1id = int.Parse(values[36]);
+                    temp.t2_champ2id = int.Parse(values[39]);
+                    temp.t2_champ3id = int.Parse(values[42]);
+                    temp.t2_champ4id = int.Parse(values[45]);
+                    temp.t2_champ5id = int.Parse(values[48]);
+                    temp.t2_towerKill = int.Parse(values[51]);
+                    temp.t2_inhibitorKills = int.Parse(values[52]);
+                    temp.t2_baronKills = int.Parse(values[53]);
+                    temp.t2_dragonKills = int.Parse(values[54]);
+                    temp.t2_riftHeraldKills = int.Parse(values[55]);
+
+                    fullDataList.Add(temp);
+                }
+            }
+            return visas;
         }
 
 
     }
     public class Instant
     {
-        public int Variable { get; set; }
         public int t1_win { get; set; }
         public int t2_win { get; set; }
     }
