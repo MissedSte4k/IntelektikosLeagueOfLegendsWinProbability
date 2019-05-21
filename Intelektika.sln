@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.106
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intelektika", "Intelektika\Intelektika.csproj", "{58A6F83A-864C-42A9-BD90-FB60EA97AC4D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{58A6F83A-864C-42A9-BD90-FB60EA97AC4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58A6F83A-864C-42A9-BD90-FB60EA97AC4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58A6F83A-864C-42A9-BD90-FB60EA97AC4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58A6F83A-864C-42A9-BD90-FB60EA97AC4D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {56DE5340-1943-422B-9F34-6EA3ED8E7A28}
+	EndGlobalSection
+EndGlobal
