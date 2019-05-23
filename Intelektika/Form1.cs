@@ -19,8 +19,8 @@ namespace Intelektika
     {
         public string file = @"..\Debug\Data\games.csv";
 
-        public const int MaxTime = 2;
-        public const int LearnData = 40000;
+        public int MaxTime = 2;
+        public const int LearnData = 10000;
         List<List<int>> CheckList = new List<List<int>>();
         List<Dictionary<int, Dictionary<int, Instant>>> visas = new List<Dictionary<int, Dictionary<int, Instant>>>();
         public const int MaxNumberOfNormalizedData = 57;
@@ -37,8 +37,10 @@ namespace Intelektika
         public int banSpot = 22;
         public int summSpot = 23;
         public int sumazinta = 0;
-        public int MaxTimeUsed = 40;
+        public int MaxTimeUsed = 44;
         public int MinTimeUsed = 5;
+        public double BajesBendras = 0;
+        public bool RodytTarpinius = false;
 
 
         public Form1()
@@ -56,10 +58,12 @@ namespace Intelektika
         private void button1_Click(object sender, EventArgs e)
         {
             var Data = ReadLinesAsString();
+            //var DataAsInt = ReadLinesAsInt();
 
-            /*for (int o = 1; o <= 10; o++)
-            {*/
-            int o = 1;
+
+            textBox1.AppendText("Nenormalizuotas Bajeso \n");
+            for (int o = 1; o <= 10; o++)
+            { 
                 WinCount = 0;
                 DefeatCount = 0;
                 visas = new List<Dictionary<int, Dictionary<int, Instant>>>();
@@ -76,11 +80,15 @@ namespace Intelektika
                 ApsimokykBajes(Data, o);
                 addProbab(visas);
                 KryzminePatikra(CheckList);
-           //}
+            }
+            BajesBendras = BajesBendras / 10;
+            textBox1.AppendText("Bendras nenormalizuoto Bajes vidurkis: " + BajesBendras * 100 + "% \n");
+            BajesBendras = 0;
+            textBox1.AppendText("Normalizuotas Bajeso");
+            textBox1.AppendText(Environment.NewLine);
+            for (int o = 1; o <= 10; o++)
+            {
 
-            /*for (int o = 1; o <= 10; o++)
-            {*/
-                
                 WinCount = 1;
                 DefeatCount = 0;
                 visas = new List<Dictionary<int, Dictionary<int, Instant>>>();
@@ -97,9 +105,11 @@ namespace Intelektika
                 ApsimokykBajes2(Data, o);
                 addProbab(visas);
                 KryzminePatikra(CheckList);
-           //}
+            }
+            textBox1.AppendText("Bendras normalizuoto Bajes vidurkis: " + BajesBendras * 10 + "%");
+            textBox1.AppendText(Environment.NewLine);
+            MaxTimeUsed++;
         }
-        
         public void ApsimokykBajes2(List<string> list, int o)
         {
             CheckList = new List<List<int>>();
@@ -236,7 +246,9 @@ namespace Intelektika
                 else
                     falsePositive++;
             }
-            textBox1.Text += ("Rezultatai: " + (truePositive / (truePositive + falsePositive) * 100) + "%");
+            if(RodytTarpinius)
+                textBox1.Text += ("Rezultatai: " + (truePositive / (truePositive + falsePositive) * 100) + "% \n");
+            BajesBendras += (truePositive / (truePositive + falsePositive));
         }
         List<double> getTop(List<double> tikimybes)
         {
@@ -645,10 +657,15 @@ namespace Intelektika
 
             return CheckList;
         }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 
 
-    
+
     public class Instant
     {
         public int t1_win { get; set; }
