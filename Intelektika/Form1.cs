@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using Accord.MachineLearning.DecisionTrees;
 
 // This is the code for your desktop app.
 // Press Ctrl+F5 (or go to Debug > Start Without Debugging) to run your app.
@@ -18,7 +19,7 @@ namespace Intelektika
     {
         public string file = @"..\Debug\Data\games.csv";
 
-        public const int MaxTime = 4;
+        public const int MaxTime = 2;
         public const int LearnData = 40000;
         List<List<int>> CheckList = new List<List<int>>();
         List<Dictionary<int, Dictionary<int, Instant>>> visas = new List<Dictionary<int, Dictionary<int, Instant>>>();
@@ -31,11 +32,14 @@ namespace Intelektika
         public int vertinamasTop = 10;
         public int[] champions = new int[]{11,14,17,20,23,36,39,42,45,48};
         public int[] bans = new int[] { 31,32,33,34,35,56,57,58,59,60};
-        public int[] summonerSpell = new int[] { 12,13,15,16,18,19,21,22,24,25,37,38,40,4,43,44,46,47,49,50};
+        public int[] summonerSpell = new int[] { 12,13,15,16,18,19,21,22,24,25,37,38,40,41,43,44,46,47,49,50};
         public int champSpot = 21;
         public int banSpot = 22;
         public int summSpot = 23;
         public int sumazinta = 0;
+        public int MaxTimeUsed = 40;
+        public int MinTimeUsed = 5;
+
 
         public Form1()
         {
@@ -105,88 +109,106 @@ namespace Intelektika
                 sumazinta = 0;
                 line = list[i];
                 string[] values = line.Split(',');
-                if (i >= (o * LearnData / 10) || i < ((o - 1) * LearnData / 10))
+                if (TimeAboveConst(int.Parse(values[2])) && TimeBelowConst(int.Parse(values[2])))
                 {
-                    int j = 0;
-
-                    for (int l = 5; l < MaxNumberOfNormalizedData; l++)
+                    if (i >= (o * LearnData / 10) || i < ((o - 1) * LearnData / 10))
                     {
-                        visas = addUsingDimension(j, int.Parse(values[2]), int.Parse(values[l]), int.Parse(values[4]), visas);
-                        j++;
-                        if (int.Parse(values[4]) == 1)
+                        int j = 0;
+
+                        for (int l = 5; l < MaxNumberOfNormalizedData; l++)
                         {
-                            WinCount++;
+                            visas = addUsingDimension(j, int.Parse(values[2]), int.Parse(values[l]), int.Parse(values[4]), visas);
+                            j++;
+                            if (int.Parse(values[4]) == 1)
+                            {
+                                WinCount++;
+                            }
+                            else
+                                DefeatCount++;
                         }
-                        else
-                            DefeatCount++;
+                    }
+                    else
+                    {
+                        List<int> intList = new List<int>();
+                        intList.Add(int.Parse(values[2]));
+                        intList.Add(int.Parse(values[3]));
+                        intList.Add(int.Parse(values[4]));
+                        intList.Add(int.Parse(values[5]));
+                        intList.Add(int.Parse(values[6]));
+                        intList.Add(int.Parse(values[7]));
+                        intList.Add(int.Parse(values[8]));
+                        intList.Add(int.Parse(values[9]));
+                        intList.Add(int.Parse(values[10]));
+                        intList.Add(int.Parse(values[11]));
+                        intList.Add(int.Parse(values[12]));
+                        intList.Add(int.Parse(values[13]));
+                        intList.Add(int.Parse(values[14]));
+                        intList.Add(int.Parse(values[15]));
+                        intList.Add(int.Parse(values[16]));
+                        intList.Add(int.Parse(values[17]));
+                        intList.Add(int.Parse(values[18]));
+                        intList.Add(int.Parse(values[19]));
+                        intList.Add(int.Parse(values[20]));
+                        intList.Add(int.Parse(values[21]));
+                        intList.Add(int.Parse(values[22]));
+                        intList.Add(int.Parse(values[23]));
+                        intList.Add(int.Parse(values[24]));
+                        intList.Add(int.Parse(values[25]));
+                        intList.Add(int.Parse(values[26]));
+                        intList.Add(int.Parse(values[27]));
+                        intList.Add(int.Parse(values[28]));
+                        intList.Add(int.Parse(values[29]));
+                        intList.Add(int.Parse(values[30]));
+                        intList.Add(int.Parse(values[31]));
+                        intList.Add(int.Parse(values[32]));
+                        intList.Add(int.Parse(values[33]));
+                        intList.Add(int.Parse(values[34]));
+                        intList.Add(int.Parse(values[35]));
+                        intList.Add(int.Parse(values[36]));
+                        intList.Add(int.Parse(values[37]));
+                        intList.Add(int.Parse(values[38]));
+                        intList.Add(int.Parse(values[39]));
+                        intList.Add(int.Parse(values[40]));
+                        intList.Add(int.Parse(values[41]));
+                        intList.Add(int.Parse(values[42]));
+                        intList.Add(int.Parse(values[43]));
+                        intList.Add(int.Parse(values[44]));
+                        intList.Add(int.Parse(values[45]));
+                        intList.Add(int.Parse(values[46]));
+                        intList.Add(int.Parse(values[47]));
+                        intList.Add(int.Parse(values[48]));
+                        intList.Add(int.Parse(values[49]));
+                        intList.Add(int.Parse(values[50]));
+                        intList.Add(int.Parse(values[51]));
+                        intList.Add(int.Parse(values[52]));
+                        intList.Add(int.Parse(values[53]));
+                        intList.Add(int.Parse(values[54]));
+                        intList.Add(int.Parse(values[55]));
+                        intList.Add(int.Parse(values[56]));
+                        intList.Add(int.Parse(values[57]));
+                        intList.Add(int.Parse(values[58]));
+                        intList.Add(int.Parse(values[59]));
+                        intList.Add(int.Parse(values[60]));
+
+                        CheckList.Add(intList);
                     }
                 }
-                else
-                {
-                    List<int> intList = new List<int>();
-                    intList.Add(int.Parse(values[2]));
-                    intList.Add(int.Parse(values[3]));
-                    intList.Add(int.Parse(values[4]));
-                    intList.Add(int.Parse(values[5]));
-                    intList.Add(int.Parse(values[6]));
-                    intList.Add(int.Parse(values[7]));
-                    intList.Add(int.Parse(values[8]));
-                    intList.Add(int.Parse(values[9]));
-                    intList.Add(int.Parse(values[10]));
-                    intList.Add(int.Parse(values[11]));
-                    intList.Add(int.Parse(values[12]));
-                    intList.Add(int.Parse(values[13]));
-                    intList.Add(int.Parse(values[14]));
-                    intList.Add(int.Parse(values[15]));
-                    intList.Add(int.Parse(values[16]));
-                    intList.Add(int.Parse(values[17]));
-                    intList.Add(int.Parse(values[18]));
-                    intList.Add(int.Parse(values[19]));
-                    intList.Add(int.Parse(values[20]));
-                    intList.Add(int.Parse(values[21]));
-                    intList.Add(int.Parse(values[22]));
-                    intList.Add(int.Parse(values[23]));
-                    intList.Add(int.Parse(values[24]));
-                    intList.Add(int.Parse(values[25]));
-                    intList.Add(int.Parse(values[26]));
-                    intList.Add(int.Parse(values[27]));
-                    intList.Add(int.Parse(values[28]));
-                    intList.Add(int.Parse(values[29]));
-                    intList.Add(int.Parse(values[30]));
-                    intList.Add(int.Parse(values[31]));
-                    intList.Add(int.Parse(values[32]));
-                    intList.Add(int.Parse(values[33]));
-                    intList.Add(int.Parse(values[34]));
-                    intList.Add(int.Parse(values[35]));
-                    intList.Add(int.Parse(values[36]));
-                    intList.Add(int.Parse(values[37]));
-                    intList.Add(int.Parse(values[38]));
-                    intList.Add(int.Parse(values[39]));
-                    intList.Add(int.Parse(values[40]));
-                    intList.Add(int.Parse(values[41]));
-                    intList.Add(int.Parse(values[42]));
-                    intList.Add(int.Parse(values[43]));
-                    intList.Add(int.Parse(values[44]));
-                    intList.Add(int.Parse(values[45]));
-                    intList.Add(int.Parse(values[46]));
-                    intList.Add(int.Parse(values[47]));
-                    intList.Add(int.Parse(values[48]));
-                    intList.Add(int.Parse(values[49]));
-                    intList.Add(int.Parse(values[50]));
-                    intList.Add(int.Parse(values[51]));
-                    intList.Add(int.Parse(values[52]));
-                    intList.Add(int.Parse(values[53]));
-                    intList.Add(int.Parse(values[54]));
-                    intList.Add(int.Parse(values[55]));
-                    intList.Add(int.Parse(values[56]));
-                    intList.Add(int.Parse(values[57]));
-                    intList.Add(int.Parse(values[58]));
-                    intList.Add(int.Parse(values[59]));
-                    intList.Add(int.Parse(values[60]));
-
-                    CheckList.Add(intList);
-                }
             }
+
+        }
+
+        public bool TimeAboveConst(int time)
+        {
+            if (time / 60 > MinTimeUsed)
+                return true;
+            return false;
+               
+        }
+        public bool TimeBelowConst(int time)
+        {
+            if (time / 60 <= MaxTimeUsed)
+                return true;
+            return false;
 
         }
         public void KryzminePatikra(List<List<int>> CheckList)
@@ -295,13 +317,12 @@ namespace Intelektika
         {
             for (int i = 1; i <= MaxTime; i++)
             {
-                if(time/60 < (i * 5) )
+                if(time/60- MinTimeUsed < (MaxTimeUsed - MinTimeUsed)/MaxTime * i)
                 {
                     return i-1;
                 }
             }
             return 0;
-
         }
 
         public void ApsimokykBajes(List<string> list, int o)
