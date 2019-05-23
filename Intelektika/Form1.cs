@@ -14,6 +14,9 @@ using Accord.IO;
 using Accord.MachineLearning.DecisionTrees.Learning;
 using Accord.Math;
 using Accord.Statistics.Analysis;
+using Accord.Neuro.Learning;
+using Accord.Neuro;
+
 
 // This is the code for your desktop app.
 // Press Ctrl+F5 (or go to Debug > Start Without Debugging) to run your app.
@@ -27,6 +30,7 @@ namespace Intelektika
         public int MaxTime = 2;
         public const int LearnData = 10000;
         List<List<int>> CheckList = new List<List<int>>();
+        List<string> MedzioTikrinimas = new List<string>();
         List<Dictionary<int, Dictionary<int, Instant>>> visas = new List<Dictionary<int, Dictionary<int, Instant>>>();
         public const int MaxNumberOfNormalizedData = 57;
         public const int MaxNumberOfData = 24;
@@ -45,11 +49,14 @@ namespace Intelektika
         public int MaxTimeUsed = 44;
         public int MinTimeUsed = 5;
         public double BajesBendras = 0;
-        public bool RodytTarpinius = false;
+        public double VoteBendras = 0;
+        public double MedzioBendras = 0;
+        public double NeuroninioBendras = 0;
+        public bool RodytTarpinius = true;
         public int[] outputsC45;
         public DecisionTree tree;
-
-
+        public BackPropagationLearning teacher;
+        public ActivationNetwork network;
 
         public Form1()
         {
@@ -67,9 +74,9 @@ namespace Intelektika
         {
             var Data = ReadLinesAsString();
             //var DataAsInt = ReadLinesAsInt();
+            var Data2 = Filter(Data);
 
-
-            textBox1.AppendText("Nenormalizuotas Bajeso \n");
+            /*textBox1.AppendText("Nenormalizuotas Bajeso \n");
             for (int o = 1; o <= 10; o++)
             { 
                 WinCount = 0;
@@ -94,10 +101,12 @@ namespace Intelektika
             BajesBendras = 0;
             textBox1.AppendText("Normalizuotas Bajeso");
             textBox1.AppendText(Environment.NewLine);
+            */
+
             for (int o = 1; o <= 10; o++)
             {
-
-                WinCount = 1;
+                MedzioTikrinimas = new List<string>();
+                WinCount = 0;
                 DefeatCount = 0;
                 visas = new List<Dictionary<int, Dictionary<int, Instant>>>();
                 for (int i = 0; i < MaxNumberOfData; i++)//kintamuju skaicius
@@ -110,14 +119,47 @@ namespace Intelektika
                     }
                     visas.Add(a);
                 }
-                ApsimokykBajes2(Data, o);
+                
+                ApsimokykBajes2(Data2, o);
                 addProbab(visas);
+                var MedzioDuomeys = IsskirkDuomenisMedziui(Data2, o);
+                DesicionTreeLearning(MedzioDuomeys);
+                TeachNeuralteacher(MedzioDuomeys);
+                var TreeCheck = GetC45Data(MedzioTikrinimas);
                 KryzminePatikra(CheckList);
+                KryzminePatikraMedzio(TreeCheck);
+                KryzminePatikraNeural(TreeCheck);
+                KryzminePatikraSuBalsavimu(CheckList, TreeCheck);
             }
-            textBox1.AppendText("Bendras normalizuoto Bajes vidurkis: " + BajesBendras * 10 + "%");
-            textBox1.AppendText(Environment.NewLine);
-            MaxTimeUsed++;
+            textBox5.AppendText("Bendras normalizuoto Bajes vidurkis: " + BajesBendras * 10 + "%");
+            textBox5.AppendText(Environment.NewLine);
+            textBox5.AppendText("Bendras normalizuoto Medzio vidurkis: " + MedzioBendras * 10 + "%");
+            textBox5.AppendText(Environment.NewLine);
+            textBox5.AppendText("Bendras normalizuoto Neuroninio vidurkis: " + NeuroninioBendras * 10 + "%");
+            textBox5.AppendText(Environment.NewLine);
+            textBox5.AppendText("Bendras normalizuoto Neuroninio vidurkis: " + VoteBendras * 10 + "%");
+            textBox5.AppendText(Environment.NewLine);
+
+
         }
+        public List<string> Filter(List<string> list)
+        {
+            string line = null;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                sumazinta = 0;
+                line = list[i];
+                string[] values = line.Split(',');
+                if (!TimeAboveConst(int.Parse(values[2])) || !TimeBelowConst(int.Parse(values[2])))
+                {
+                    list.Remove(list[i]);
+                    i--;
+                }
+            }
+            return list;
+        }
+
         public void ApsimokykBajes2(List<string> list, int o)
         {
             CheckList = new List<List<int>>();
@@ -127,92 +169,176 @@ namespace Intelektika
                 sumazinta = 0;
                 line = list[i];
                 string[] values = line.Split(',');
-                if (TimeAboveConst(int.Parse(values[2])) && TimeBelowConst(int.Parse(values[2])))
+                if (i >= (o * LearnData / 10) || i < ((o - 1) * LearnData / 10))
                 {
-                    if (i >= (o * LearnData / 10) || i < ((o - 1) * LearnData / 10))
-                    {
-                        int j = 0;
+                    int j = 0;
 
-                        for (int l = 5; l < MaxNumberOfNormalizedData; l++)
+                    for (int l = 5; l < MaxNumberOfNormalizedData; l++)
+                    {
+                        visas = addUsingDimension(j, int.Parse(values[2]), int.Parse(values[l]), int.Parse(values[4]), visas);
+                        j++;
+                        if (int.Parse(values[4]) == 1)
                         {
-                            visas = addUsingDimension(j, int.Parse(values[2]), int.Parse(values[l]), int.Parse(values[4]), visas);
-                            j++;
-                            if (int.Parse(values[4]) == 1)
-                            {
-                                WinCount++;
-                            }
-                            else
-                                DefeatCount++;
+                            WinCount++;
                         }
+                        else
+                            DefeatCount++;
                     }
-                    else
-                    {
-                        List<int> intList = new List<int>();
-                        intList.Add(int.Parse(values[2]));
-                        intList.Add(int.Parse(values[3]));
-                        intList.Add(int.Parse(values[4]));
-                        intList.Add(int.Parse(values[5]));
-                        intList.Add(int.Parse(values[6]));
-                        intList.Add(int.Parse(values[7]));
-                        intList.Add(int.Parse(values[8]));
-                        intList.Add(int.Parse(values[9]));
-                        intList.Add(int.Parse(values[10]));
-                        intList.Add(int.Parse(values[11]));
-                        intList.Add(int.Parse(values[12]));
-                        intList.Add(int.Parse(values[13]));
-                        intList.Add(int.Parse(values[14]));
-                        intList.Add(int.Parse(values[15]));
-                        intList.Add(int.Parse(values[16]));
-                        intList.Add(int.Parse(values[17]));
-                        intList.Add(int.Parse(values[18]));
-                        intList.Add(int.Parse(values[19]));
-                        intList.Add(int.Parse(values[20]));
-                        intList.Add(int.Parse(values[21]));
-                        intList.Add(int.Parse(values[22]));
-                        intList.Add(int.Parse(values[23]));
-                        intList.Add(int.Parse(values[24]));
-                        intList.Add(int.Parse(values[25]));
-                        intList.Add(int.Parse(values[26]));
-                        intList.Add(int.Parse(values[27]));
-                        intList.Add(int.Parse(values[28]));
-                        intList.Add(int.Parse(values[29]));
-                        intList.Add(int.Parse(values[30]));
-                        intList.Add(int.Parse(values[31]));
-                        intList.Add(int.Parse(values[32]));
-                        intList.Add(int.Parse(values[33]));
-                        intList.Add(int.Parse(values[34]));
-                        intList.Add(int.Parse(values[35]));
-                        intList.Add(int.Parse(values[36]));
-                        intList.Add(int.Parse(values[37]));
-                        intList.Add(int.Parse(values[38]));
-                        intList.Add(int.Parse(values[39]));
-                        intList.Add(int.Parse(values[40]));
-                        intList.Add(int.Parse(values[41]));
-                        intList.Add(int.Parse(values[42]));
-                        intList.Add(int.Parse(values[43]));
-                        intList.Add(int.Parse(values[44]));
-                        intList.Add(int.Parse(values[45]));
-                        intList.Add(int.Parse(values[46]));
-                        intList.Add(int.Parse(values[47]));
-                        intList.Add(int.Parse(values[48]));
-                        intList.Add(int.Parse(values[49]));
-                        intList.Add(int.Parse(values[50]));
-                        intList.Add(int.Parse(values[51]));
-                        intList.Add(int.Parse(values[52]));
-                        intList.Add(int.Parse(values[53]));
-                        intList.Add(int.Parse(values[54]));
-                        intList.Add(int.Parse(values[55]));
-                        intList.Add(int.Parse(values[56]));
-                        intList.Add(int.Parse(values[57]));
-                        intList.Add(int.Parse(values[58]));
-                        intList.Add(int.Parse(values[59]));
-                        intList.Add(int.Parse(values[60]));
-
-                        CheckList.Add(intList);
-                    }
+                }
+                else
+                {
+                    List<int> intList = new List<int>();
+                    intList.Add(int.Parse(values[2]));
+                    intList.Add(int.Parse(values[3]));
+                    intList.Add(int.Parse(values[4]));
+                    intList.Add(int.Parse(values[5]));
+                    intList.Add(int.Parse(values[6]));
+                    intList.Add(int.Parse(values[7]));
+                    intList.Add(int.Parse(values[8]));
+                    intList.Add(int.Parse(values[9]));
+                    intList.Add(int.Parse(values[10]));
+                    intList.Add(int.Parse(values[11]));
+                    intList.Add(int.Parse(values[12]));
+                    intList.Add(int.Parse(values[13]));
+                    intList.Add(int.Parse(values[14]));
+                    intList.Add(int.Parse(values[15]));
+                    intList.Add(int.Parse(values[16]));
+                    intList.Add(int.Parse(values[17]));
+                    intList.Add(int.Parse(values[18]));
+                    intList.Add(int.Parse(values[19]));
+                    intList.Add(int.Parse(values[20]));
+                    intList.Add(int.Parse(values[21]));
+                    intList.Add(int.Parse(values[22]));
+                    intList.Add(int.Parse(values[23]));
+                    intList.Add(int.Parse(values[24]));
+                    intList.Add(int.Parse(values[25]));
+                    intList.Add(int.Parse(values[26]));
+                    intList.Add(int.Parse(values[27]));
+                    intList.Add(int.Parse(values[28]));
+                    intList.Add(int.Parse(values[29]));
+                    intList.Add(int.Parse(values[30]));
+                    intList.Add(int.Parse(values[31]));
+                    intList.Add(int.Parse(values[32]));
+                    intList.Add(int.Parse(values[33]));
+                    intList.Add(int.Parse(values[34]));
+                    intList.Add(int.Parse(values[35]));
+                    intList.Add(int.Parse(values[36]));
+                    intList.Add(int.Parse(values[37]));
+                    intList.Add(int.Parse(values[38]));
+                    intList.Add(int.Parse(values[39]));
+                    intList.Add(int.Parse(values[40]));
+                    intList.Add(int.Parse(values[41]));
+                    intList.Add(int.Parse(values[42]));
+                    intList.Add(int.Parse(values[43]));
+                    intList.Add(int.Parse(values[44]));
+                    intList.Add(int.Parse(values[45]));
+                    intList.Add(int.Parse(values[46]));
+                    intList.Add(int.Parse(values[47]));
+                    intList.Add(int.Parse(values[48]));
+                    intList.Add(int.Parse(values[49]));
+                    intList.Add(int.Parse(values[50]));
+                    intList.Add(int.Parse(values[51]));
+                    intList.Add(int.Parse(values[52]));
+                    intList.Add(int.Parse(values[53]));
+                    intList.Add(int.Parse(values[54]));
+                    intList.Add(int.Parse(values[55]));
+                    intList.Add(int.Parse(values[56]));
+                    intList.Add(int.Parse(values[57]));
+                    intList.Add(int.Parse(values[58]));
+                    intList.Add(int.Parse(values[59]));
+                    intList.Add(int.Parse(values[60]));
+                    MedzioTikrinimas.Add(list[i]);
+                    CheckList.Add(intList);
                 }
             }
 
+        }
+        public void KryzminePatikraNeural(double[][] Check)
+        {
+            double truePositive = 0;
+            double falsePositive = 0;
+            for (int i = 0; i < Check.Length; i++)
+            {
+                double[] tmp2 = network.Compute(Check[i]);
+                int tmp = CheckList[i][2];
+                if (tmp == 1 &&  tmp2[0] < slenkstis)
+                {
+                    truePositive++;
+                }
+                if (tmp == 2 && tmp2[0] > slenkstis)
+                {
+                    truePositive++;
+                }
+                else
+                    falsePositive++;
+            }
+            if (RodytTarpinius)
+                textBox3.AppendText("Neuroninio: " + (truePositive / (truePositive + falsePositive) * 100) + "% \n");
+            NeuroninioBendras += (truePositive / (truePositive + falsePositive));
+        }
+
+        public void KryzminePatikraSuBalsavimu(List<List<int>> CheckList, double[][] Check)
+        {
+            double truePositive = 0;
+            double falsePositive = 0;
+            int[] result = tree.Decide(Check);
+            for (int j = 0; j < CheckList.Count; j++)
+            {
+                sumazinta = 0;
+                List<double> tikimybes = new List<double>();
+                for (int i = 0; i < CheckList[j].Count - 4; i++)
+                {
+                    tikimybes.Add(chekWinProb(i, CheckList[j][i], CheckList[j][2]));
+                }
+                List<double> topas = getTop(tikimybes);
+                double tikimybe = P(topas);
+                int tmp = CheckList[j][2];
+                double[] tmp2 = network.Compute(Check[j]);
+                double voteFirst = 0;
+                double voteSecond = 0;
+                if (tikimybe > slenkstis)
+                {
+                    voteFirst += 0.74;
+                }
+                else
+                    voteSecond += 0.74;
+
+                if (tmp2[0] < 0.2)
+                {
+                    voteFirst += 0.65;
+                }
+                else
+                    voteSecond += 0.65;
+                var kint = result[j];
+                if (kint == 1)
+                {
+                    voteFirst += 0.92;
+                }
+                else
+                    voteSecond += 0.92;
+
+                if (voteFirst > voteSecond && tmp == 1)
+                {
+                    truePositive++;
+                }
+                else if (voteFirst < voteSecond && tmp == 2)
+                {
+                    truePositive++;
+                }
+                else
+                    falsePositive++;
+            }
+            if (RodytTarpinius)
+                textBox4.AppendText("Balsavimo: " + (truePositive / (truePositive + falsePositive) * 100) + "% \n");
+            VoteBendras += (truePositive / (truePositive + falsePositive));
+        }
+
+        public int vote(int baj, int med)
+        {
+            if (baj == med)
+                return baj;
+            else
+                return med;
         }
 
         public bool TimeAboveConst(int time)
@@ -228,6 +354,25 @@ namespace Intelektika
                 return true;
             return false;
 
+        }
+        public void KryzminePatikraMedzio(double[][] Check)
+        {
+            double truePositive = 0;
+            double falsePositive = 0;
+            int[] result = tree.Decide(Check);
+            for(int j = 0; j < CheckList.Count; j++)
+            {
+                int tmp = CheckList[j][2];
+                if ( tmp == result[j])
+                {
+                    truePositive++;
+                }
+                else
+                    falsePositive++;
+            }
+            if (RodytTarpinius)
+                textBox2.AppendText("Medis: " + (truePositive / (truePositive + falsePositive) * 100) + "% \n");
+            MedzioBendras += (truePositive / (truePositive + falsePositive));
         }
         public void KryzminePatikra(List<List<int>> CheckList)
         {
@@ -255,7 +400,7 @@ namespace Intelektika
                     falsePositive++;
             }
             if(RodytTarpinius)
-                textBox1.Text += ("Rezultatai: " + (truePositive / (truePositive + falsePositive) * 100) + "% \n");
+                textBox1.AppendText("Bayes: " + (truePositive / (truePositive + falsePositive) * 100) + "% \n");
             BajesBendras += (truePositive / (truePositive + falsePositive));
         }
         List<double> getTop(List<double> tikimybes)
@@ -585,158 +730,123 @@ namespace Intelektika
             return temp;
         }
 
-        public List<List<int>> ReadLinesAsInt()
-        {
-            List<List<int>> CheckList = new List<List<int>>();
-
-            using (StreamReader reader = new StreamReader(file))
-            {
-                string line = null;
-                line = reader.ReadLine();
-
-                List<int> intList = new List<int>();
-
-                while (null != (line = reader.ReadLine()))
-                {
-                    string[] values = line.Split(';');
-                    intList.Add(int.Parse(values[2]));
-                    intList.Add(int.Parse(values[3]));
-                    intList.Add(int.Parse(values[4]));
-                    intList.Add(int.Parse(values[5]));
-                    intList.Add(int.Parse(values[6]));
-                    intList.Add(int.Parse(values[7]));
-                    intList.Add(int.Parse(values[8]));
-                    intList.Add(int.Parse(values[9]));
-                    intList.Add(int.Parse(values[10]));
-                    intList.Add(int.Parse(values[11]));
-                    intList.Add(int.Parse(values[12]));
-                    intList.Add(int.Parse(values[13]));
-                    intList.Add(int.Parse(values[14]));
-                    intList.Add(int.Parse(values[15]));
-                    intList.Add(int.Parse(values[16]));
-                    intList.Add(int.Parse(values[17]));
-                    intList.Add(int.Parse(values[18]));
-                    intList.Add(int.Parse(values[19]));
-                    intList.Add(int.Parse(values[20]));
-                    intList.Add(int.Parse(values[21]));
-                    intList.Add(int.Parse(values[22]));
-                    intList.Add(int.Parse(values[23]));
-                    intList.Add(int.Parse(values[24]));
-                    intList.Add(int.Parse(values[25]));
-                    intList.Add(int.Parse(values[26]));
-                    intList.Add(int.Parse(values[27]));
-                    intList.Add(int.Parse(values[28]));
-                    intList.Add(int.Parse(values[29]));
-                    intList.Add(int.Parse(values[30]));
-                    intList.Add(int.Parse(values[31]));
-                    intList.Add(int.Parse(values[32]));
-                    intList.Add(int.Parse(values[33]));
-                    intList.Add(int.Parse(values[34]));
-                    intList.Add(int.Parse(values[35]));
-                    intList.Add(int.Parse(values[36]));
-                    intList.Add(int.Parse(values[37]));
-                    intList.Add(int.Parse(values[38]));
-                    intList.Add(int.Parse(values[39]));
-                    intList.Add(int.Parse(values[40]));
-                    intList.Add(int.Parse(values[41]));
-                    intList.Add(int.Parse(values[42]));
-                    intList.Add(int.Parse(values[43]));
-                    intList.Add(int.Parse(values[44]));
-                    intList.Add(int.Parse(values[45]));
-                    intList.Add(int.Parse(values[46]));
-                    intList.Add(int.Parse(values[47]));
-                    intList.Add(int.Parse(values[48]));
-                    intList.Add(int.Parse(values[49]));
-                    intList.Add(int.Parse(values[50]));
-                    intList.Add(int.Parse(values[51]));
-                    intList.Add(int.Parse(values[52]));
-                    intList.Add(int.Parse(values[53]));
-                    intList.Add(int.Parse(values[54]));
-                    intList.Add(int.Parse(values[55]));
-                    intList.Add(int.Parse(values[56]));
-                    intList.Add(int.Parse(values[57]));
-                    intList.Add(int.Parse(values[58]));
-                    intList.Add(int.Parse(values[59]));
-                    intList.Add(int.Parse(values[60]));                   
-                }
-
-                CheckList.Add(intList);
-            }
-
-            return CheckList;
-        }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
 
-        public void DesicionTreeLearning(NormilizedData data)
+        }
+
+        public void DesicionTreeLearning(List<string> list)
         {
-            //double[,] table;
-
-            // Creates a matrix from the entire source data table
-            double[,] table = (dgvLearningSource.DataSource as DataTable).ToMatrix(out columnNames);
-
-            // Get only the input vector values (first two columns)
-            double[][] inputs = table.GetColumns(0, 1).ToJagged();
-
-            // Get only the output labels (last column)
-            int[] outputs = table.GetColumn(2).ToInt32();
 
 
             // Specify the input variables
             DecisionVariable[] variables =
             {
-                new DecisionVariable("x", DecisionVariableKind.Continuous),
-                new DecisionVariable("y", DecisionVariableKind.Continuous),
+                new DecisionVariable("duration", DecisionVariableKind.Continuous),
+                new DecisionVariable("blood", DecisionVariableKind.Continuous),
+                new DecisionVariable("tower", DecisionVariableKind.Continuous),
+                new DecisionVariable("inhibitor", DecisionVariableKind.Continuous),
+                new DecisionVariable("baron", DecisionVariableKind.Continuous),
+                new DecisionVariable("dragon", DecisionVariableKind.Continuous),
+                new DecisionVariable("herald", DecisionVariableKind.Continuous),
+                new DecisionVariable("towerAdvantage", DecisionVariableKind.Continuous),
+                new DecisionVariable("inhibitorAdvantage", DecisionVariableKind.Continuous),
+                new DecisionVariable("baronAdvantage", DecisionVariableKind.Continuous),
+                new DecisionVariable("DragonAdvantage", DecisionVariableKind.Continuous),
+                new DecisionVariable("HeraldAdvantage", DecisionVariableKind.Continuous),
             };
 
             // Create the C4.5 learning algorithm
             var c45 = new C45Learning(variables);
 
-
+            var inputs = GetC45Data(list);
 
             // Learn the decision tree using C4.5
-            tree = c45.Learn(inputs, outputs);
+            tree = new DecisionTree(c45.Attributes,2);
+            tree = c45.Learn(inputs, outputsC45);
+        }
+
+        public void TeachNeuralteacher(List<string> list)
+        {
+            double[][] outputs = new double[outputsC45.Length][];
+            for (int i = 0; i < outputsC45.Length; i++)
+            {
+                outputs[i] = new double[1] { outputsC45[i] - 1 };
+            }
+            var inputs = GetC45Data(list);
+            IActivationFunction function = new SigmoidFunction(2);
+            network = new ActivationNetwork(function, 12, 4, 1);
+            teacher = new BackPropagationLearning(network);
+            var input = GetC45Data(list);
+            double tempMin = 9999999999;
+            double error = 0;
+            int count = 0;
+            while (count != 3)
+            {
+                error = teacher.RunEpoch(input, outputs);
+                if(error + 0.001 < tempMin)
+                {
+                    tempMin = error;
+                    count = 0;
+                }
+                else
+                    count++;
+            }
 
         }
 
-        public double[,] GetC45Data()
+        public List<string> IsskirkDuomenisMedziui(List<string> list, int o)
         {
-            using (StreamReader reader = new StreamReader(file))
+            var MedzioDuom = new List<string>();
+            string line = null;
+            for (int i = 0; i < list.Count; i++)
             {
-                string line = null;
-                line = reader.ReadLine();
-
-                List<int> intList = new List<int>();
-
-                while (null != (line = reader.ReadLine()))
+                sumazinta = 0;
+                line = list[i];
+                string[] values = line.Split(',');
+                if (i >= (o * LearnData / 10) || i < ((o - 1) * LearnData / 10))
                 {
-                    string[] values = line.Split(';');
-                    intList.Add(int.Parse(values[2]));
+                    int j = 0;
 
-                    intList.Add(int.Parse(values[4]));
-                    intList.Add(int.Parse(values[5]));
-                    intList.Add(int.Parse(values[6]));
-                    intList.Add(int.Parse(values[7]));
-                    intList.Add(int.Parse(values[8]));
-                    intList.Add(int.Parse(values[9]));
-                    intList.Add(int.Parse(values[10]));
-
-                    intList.Add(int.Parse(values[26]));
-                    intList.Add(int.Parse(values[27]));
-                    intList.Add(int.Parse(values[28]));
-                    intList.Add(int.Parse(values[29]));
-                    intList.Add(int.Parse(values[30]));
-                    
-                    intList.Add(int.Parse(values[51]));
-                    intList.Add(int.Parse(values[52]));
-                    intList.Add(int.Parse(values[53]));
-                    intList.Add(int.Parse(values[54]));
-                    intList.Add(int.Parse(values[55]));
-
+                    MedzioDuom.Add(list[i]);
                 }
             }
+            return MedzioDuom;
         }
+        public double[][] GetC45Data(List<string> list)
+        {
+            outputsC45 = new int[list.Count];
+            int k = 0;
+            int j = 0;
+            double[][] visas = new double[list.Count][];
+            for (int i = 0; i < list.Count; i++)
+            {
+                double[] temp = new double[12];
+                string[] values = list[i].Split(',');
+                temp[k++] = SplitTime(int.Parse(values[2]));
+                outputsC45[i] = int.Parse(values[4]);
+                temp[k++] = double.Parse(values[5]);
+                temp[k++] = double.Parse(values[6]);
+                temp[k++] = double.Parse(values[7]);
+                temp[k++] = double.Parse(values[8]);
+                temp[k++] = double.Parse(values[9]);
+                temp[k++] = double.Parse(values[10]);
+
+                temp[k++] = double.Parse(values[26]) - double.Parse(values[51]);
+                temp[k++] = double.Parse(values[27]) - double.Parse(values[52]);
+                temp[k++] = double.Parse(values[28]) - double.Parse(values[53]);
+                temp[k++] = double.Parse(values[29]) - double.Parse(values[54]);
+                temp[k++] = double.Parse(values[30]) - double.Parse(values[55]);
+                k = 0;
+                visas[j++] = temp;
+            }
+            return visas;
+
+        }
+
+        
+        
     }
 
 
