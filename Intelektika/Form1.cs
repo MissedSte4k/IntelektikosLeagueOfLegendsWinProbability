@@ -9,6 +9,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using Accord.MachineLearning.DecisionTrees;
+using Accord;
+using Accord.IO;
+using Accord.MachineLearning.DecisionTrees.Learning;
+using Accord.Math;
+using Accord.Statistics.Analysis;
 
 // This is the code for your desktop app.
 // Press Ctrl+F5 (or go to Debug > Start Without Debugging) to run your app.
@@ -39,6 +44,9 @@ namespace Intelektika
         public int sumazinta = 0;
         public int MaxTimeUsed = 40;
         public int MinTimeUsed = 5;
+        public int[] outputsC45;
+        public DecisionTree tree;
+
 
 
         public Form1()
@@ -644,6 +652,75 @@ namespace Intelektika
             }
 
             return CheckList;
+        }
+
+        public void DesicionTreeLearning(NormilizedData data)
+        {
+            //double[,] table;
+
+            // Creates a matrix from the entire source data table
+            double[,] table = (dgvLearningSource.DataSource as DataTable).ToMatrix(out columnNames);
+
+            // Get only the input vector values (first two columns)
+            double[][] inputs = table.GetColumns(0, 1).ToJagged();
+
+            // Get only the output labels (last column)
+            int[] outputs = table.GetColumn(2).ToInt32();
+
+
+            // Specify the input variables
+            DecisionVariable[] variables =
+            {
+                new DecisionVariable("x", DecisionVariableKind.Continuous),
+                new DecisionVariable("y", DecisionVariableKind.Continuous),
+            };
+
+            // Create the C4.5 learning algorithm
+            var c45 = new C45Learning(variables);
+
+
+
+            // Learn the decision tree using C4.5
+            tree = c45.Learn(inputs, outputs);
+
+        }
+
+        public double[,] GetC45Data()
+        {
+            using (StreamReader reader = new StreamReader(file))
+            {
+                string line = null;
+                line = reader.ReadLine();
+
+                List<int> intList = new List<int>();
+
+                while (null != (line = reader.ReadLine()))
+                {
+                    string[] values = line.Split(';');
+                    intList.Add(int.Parse(values[2]));
+
+                    intList.Add(int.Parse(values[4]));
+                    intList.Add(int.Parse(values[5]));
+                    intList.Add(int.Parse(values[6]));
+                    intList.Add(int.Parse(values[7]));
+                    intList.Add(int.Parse(values[8]));
+                    intList.Add(int.Parse(values[9]));
+                    intList.Add(int.Parse(values[10]));
+
+                    intList.Add(int.Parse(values[26]));
+                    intList.Add(int.Parse(values[27]));
+                    intList.Add(int.Parse(values[28]));
+                    intList.Add(int.Parse(values[29]));
+                    intList.Add(int.Parse(values[30]));
+                    
+                    intList.Add(int.Parse(values[51]));
+                    intList.Add(int.Parse(values[52]));
+                    intList.Add(int.Parse(values[53]));
+                    intList.Add(int.Parse(values[54]));
+                    intList.Add(int.Parse(values[55]));
+
+                }
+            }
         }
     }
 
