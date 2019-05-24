@@ -776,7 +776,7 @@ namespace Intelektika
             }
             var inputs = GetC45Data(list);
             IActivationFunction function = new SigmoidFunction(2);
-            network = new ActivationNetwork(function, 12, 4, 1);
+            network = new ActivationNetwork(function, 12, 4, 4, 1);
             teacher = new BackPropagationLearning(network);
             var input = GetC45Data(list);
             double tempMin = 9999999999;
@@ -785,7 +785,7 @@ namespace Intelektika
             while (count != 3)
             {
                 error = teacher.RunEpoch(input, outputs);
-                if(error + 0.001 < tempMin)
+                if(error + 0.00001 < tempMin)
                 {
                     tempMin = error;
                     count = 0;
