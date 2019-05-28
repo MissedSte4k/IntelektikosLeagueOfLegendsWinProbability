@@ -807,8 +807,6 @@ namespace Intelektika
                 string[] values = line.Split(',');
                 if (i >= (o * LearnData / 10) || i < ((o - 1) * LearnData / 10))
                 {
-                    int j = 0;
-
                     MedzioDuom.Add(list[i]);
                 }
             }
